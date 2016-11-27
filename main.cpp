@@ -155,12 +155,13 @@ int main() {
         }
 
         bool flagDiag=false,flagUp=false,flagRight=false;
-        int intDiag=0,intUp=0,intRight=0,largest,siradakiRow=dna.at(i2).size()+1,siradakiColumn=dna.at(i).size()+1,score=matrix[dna.at(i2).size()+1][dna.at(i).size()+1];
+        int intDiag=0,intUp=0,intRight=0,largest,siradakiRow=rowcount-1,siradakiColumn=columncount-1,score=matrix[dna.at(i2).size()+1][dna.at(i).size()+1];
         string alignmentDna1,alignmentDna2;
 
+        cout<<score<<endl;
 
-        alignmentDna1+=matrix[0][columncount-1];
-        alignmentDna2+=matrix[rowcount-1][0];
+        //alignmentDna1=matrix[0][columncount-1];
+        //alignmentDna2=matrix[rowcount-1][0];
 
       while(1){
 
@@ -177,7 +178,7 @@ int main() {
                   intRight=matrix[siradakiRow][siradakiColumn-1];
                 }
 
-                //hangi yola gideceği karar verilecek high road veya low roada göre sonra siradakirow ve column ona göre değişecek.
+                //high road siradakirow ve column ona göre değişecek.
 
                 if(intDiag>=intUp && intDiag>=intRight) {//yollardaki en büyük değer bulunuyor
                     largest= intDiag;
@@ -210,8 +211,8 @@ int main() {
 
                 }
 
+                output << siradakiColumn+1 << " " <<siradakiRow+1 << " " << alignmentDna1 << " " << alignmentDna2 << " " << score << " " << flagDiag << " " << flagUp << " " << flagRight << " " << intDiag << " " << intUp  << " " << intRight << endl;
 
-                output << siradakiColumn << " " <<siradakiRow << " " << alignmentDna1 << " " << alignmentDna2 << " " << score << " " << flagDiag << " " << flagUp << " " << flagRight << " " << intDiag << " " << intUp  << " " << intRight << endl;
                 flagDiag=false;
                 flagRight=false;
                 flagUp=false;
