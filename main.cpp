@@ -165,14 +165,13 @@ int main() {
 
       while(1){
 
-
-                if(yonler[siradakiRow][siradakiColumn].yonup=='|'){
-                  flagUp=true;
-                  intUp=matrix[siradakiRow-1][siradakiColumn];
-                }
                 if(yonler[siradakiRow][siradakiColumn].yondiag == '\\'){
                   flagDiag=true;
                   intDiag=matrix[siradakiRow-1][siradakiColumn-1];
+                }
+                if(yonler[siradakiRow][siradakiColumn].yonup=='|'){
+                  flagUp=true;
+                  intUp=matrix[siradakiRow-1][siradakiColumn];
                 }
                 if(yonler[siradakiRow][siradakiColumn].yonright=='-'){
                   flagRight=true;
@@ -181,12 +180,11 @@ int main() {
 
                 //high road siradakirow ve column ona göre değişecek.
 
-
-                if(intUp>=intDiag && intUp>=intRight) {
-                    largest= intUp;
-                }
                 if(intDiag>=intUp && intDiag>=intRight) {//yollardaki en büyük değer bulunuyor
                     largest= intDiag;
+                }
+                if(intUp>=intDiag && intUp>=intRight) {
+                    largest= intUp;
                 }
                 if(intRight>=intDiag && intRight>=intUp) {
                     largest= intRight;
@@ -221,14 +219,13 @@ int main() {
                 flagRight=false;
 
                 if(yonler[siradakiRow][siradakiColumn].direction!=yonler[2][2].direction){
-                  intUp=matrix[siradakiRow][siradakiColumn-2];
-                  intDiag=matrix[siradakiRow-2][siradakiColumn-2];
-                  intRight=matrix[siradakiRow-2][siradakiColumn];
+                  intUp=matrix[siradakiRow][siradakiColumn-1];
+                  intDiag=matrix[siradakiRow-1][siradakiColumn-1];
+                  intRight=matrix[siradakiRow-1][siradakiColumn];
                 }else{
-                  intUp=-10;
-                  intDiag=-10;
-                  intRight=-10;
-
+                  intUp=-100;
+                  intDiag=-100;
+                  intRight=-100;
                 }
 
                 if(siradakiColumn<=2 && siradakiRow<=2){
