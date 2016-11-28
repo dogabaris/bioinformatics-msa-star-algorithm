@@ -64,7 +64,8 @@ int main() {
   }
   oku.close();//okundu
 
-
+  ofstream output;
+  output.open(("output.txt"));
 
   for(int i=0;i<dna.size()+1;i++) {
 
@@ -131,8 +132,7 @@ int main() {
 
 
 
-        ofstream output;
-        output.open(("output.txt"));
+
         output << "Matris:"<< endl;
         for(int r = 0; r < dna.at(i2).size()+2; r++){//matrisi çizdiriyor
               for(int c = 0; c < dna.at(i).size()+2; c++){
@@ -220,8 +220,7 @@ int main() {
                 flagDiag=false;
                 flagRight=false;
 
-                if(yonler[siradakiRow][siradakiColumn].direction!=yonler[1][1].direction){
-
+                if(yonler[siradakiRow][siradakiColumn].direction!=yonler[2][2].direction){
                   intUp=matrix[siradakiRow][siradakiColumn-2];
                   intDiag=matrix[siradakiRow-2][siradakiColumn-2];
                   intRight=matrix[siradakiRow-2][siradakiColumn];
@@ -229,12 +228,15 @@ int main() {
                   intUp=-10;
                   intDiag=-10;
                   intRight=-10;
+
                 }
 
-                if(siradakiColumn<=1 && siradakiRow<=1){
+                if(siradakiColumn<=2 && siradakiRow<=2){
+                  alignmentDna1+=matrix[0][2];
+                  alignmentDna2+=matrix[2][0];
                   reverse(alignmentDna1.begin(), alignmentDna1.end());
                   reverse(alignmentDna2.begin(), alignmentDna2.end());
-                  //output << alignmentDna1 << " " << alignmentDna2 <<endl;
+                  output << alignmentDna1 << " " << alignmentDna2 <<endl;
                   //cout << alignmentDna1 << " " << alignmentDna2<<endl;
                   cout <<"tur"<<endl;
                   break;
@@ -252,7 +254,7 @@ int main() {
           }
         }
       }
-
+      output.close();
 
     return 0;
 }
