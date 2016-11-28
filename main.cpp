@@ -136,7 +136,7 @@ int main() {
         output << "Matris:"<< endl;
         for(int r = 0; r < dna.at(i2).size()+2; r++){//matrisi çizdiriyor
               for(int c = 0; c < dna.at(i).size()+2; c++){
-                  output << matrix[r][c] << " ";
+                  output << matrix[r][c] << "\t";
               }
               output << endl;
 
@@ -155,7 +155,7 @@ int main() {
         }
 
         bool flagDiag=false,flagUp=false,flagRight=false;
-        int intDiag=0,intUp=0,intRight=0,largest,siradakiRow=rowcount-1,siradakiColumn=columncount-1,score=matrix[dna.at(i2).size()+1][dna.at(i).size()+1];
+        int intDiag=0,intUp=0,intRight=0,largest=0,siradakiRow=rowcount-1,siradakiColumn=columncount-1,score=matrix[dna.at(i2).size()+1][dna.at(i).size()+1];
         string alignmentDna1,alignmentDna2;
 
         cout<<score<<endl;
@@ -165,13 +165,14 @@ int main() {
 
       while(1){
 
-                if(yonler[siradakiRow][siradakiColumn].yondiag == '\\'){
-                  flagDiag=true;
-                  intDiag=matrix[siradakiRow-1][siradakiColumn-1];
-                }
+
                 if(yonler[siradakiRow][siradakiColumn].yonup=='|'){
                   flagUp=true;
                   intUp=matrix[siradakiRow-1][siradakiColumn];
+                }
+                if(yonler[siradakiRow][siradakiColumn].yondiag == '\\'){
+                  flagDiag=true;
+                  intDiag=matrix[siradakiRow-1][siradakiColumn-1];
                 }
                 if(yonler[siradakiRow][siradakiColumn].yonright=='-'){
                   flagRight=true;
@@ -180,11 +181,12 @@ int main() {
 
                 //high road siradakirow ve column ona göre değişecek.
 
-                if(intDiag>=intUp && intDiag>=intRight) {//yollardaki en büyük değer bulunuyor
-                    largest= intDiag;
-                }
+
                 if(intUp>=intDiag && intUp>=intRight) {
                     largest= intUp;
+                }
+                if(intDiag>=intUp && intDiag>=intRight) {//yollardaki en büyük değer bulunuyor
+                    largest= intDiag;
                 }
                 if(intRight>=intDiag && intRight>=intUp) {
                     largest= intRight;
@@ -211,28 +213,46 @@ int main() {
 
                 }
 
-                output << siradakiColumn+1 << " " <<siradakiRow+1 << " " << alignmentDna1 << " " << alignmentDna2 << " " << score << " " << flagDiag << " " << flagUp << " " << flagRight << " " << intDiag << " " << intUp  << " " << intRight << endl;
+                output << siradakiColumn+1 << "\t" <<siradakiRow+1 << "\t" << alignmentDna1 << "\t" << alignmentDna2 << "\t" << score << "\t" << flagDiag << "\t" << flagUp << "\t" << flagRight << "\t" << intDiag << "\t" << intUp  << "\t" << intRight << endl;
 
+
+                flagUp=false;
                 flagDiag=false;
                 flagRight=false;
-                flagUp=false;
-                intRight=0;
-                intUp=0;
-                intDiag=0;
 
-                if(siradakiColumn==1 && siradakiRow==1)
+                if(yonler[siradakiRow][siradakiColumn].direction!=yonler[1][1].direction){
+
+                  intUp=matrix[siradakiRow][siradakiColumn-2];
+                  intDiag=matrix[siradakiRow-2][siradakiColumn-2];
+                  intRight=matrix[siradakiRow-2][siradakiColumn];
+                }else{
+                  intUp=-10;
+                  intDiag=-10;
+                  intRight=-10;
+                }
+
+                if(siradakiColumn<=1 && siradakiRow<=1){
+                  reverse(alignmentDna1.begin(), alignmentDna1.end());
+                  reverse(alignmentDna2.begin(), alignmentDna2.end());
+                  //output << alignmentDna1 << " " << alignmentDna2 <<endl;
+                  //cout << alignmentDna1 << " " << alignmentDna2<<endl;
+                  cout <<"tur"<<endl;
                   break;
+                }
+
 
             }
-            reverse(alignmentDna1.begin(), alignmentDna1.end());
-            reverse(alignmentDna2.begin(), alignmentDna2.end());
-            cout << alignmentDna1 << " " << alignmentDna2;
+            //reverse(alignmentDna1.begin(), alignmentDna1.end());
+          //  reverse(alignmentDna2.begin(), alignmentDna2.end());
+            //cout << alignmentDna1 << " " << alignmentDna2<<endl;
 
             output<< "dna1: "<<alignmentDna1<<"\ndna2: "<<alignmentDna2<<endl;
             output<< "score: "<< score <<endl << "\n";
-            output.close();
+
           }
         }
       }
+
+
     return 0;
 }
