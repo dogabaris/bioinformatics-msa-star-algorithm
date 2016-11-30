@@ -4,12 +4,13 @@
 #include <sstream>
 #include <vector>
 #include <cstdlib>
+#include <iomanip>
 #include <algorithm>
 #include <cmath>
 #include <limits>
 #include <stdexcept>
 using namespace std;
-
+typedef pair<int, pair<string, string> > alignments;
 //yollar matrisi
 //tablo matrisi
 //tablo doldurulurken yollar matrisine olası yollar eklenecek
@@ -28,9 +29,11 @@ struct yon {
       char yondiag='\0';
       char yonright='\0';
       char yonup='\0';
-      string direction;
+      string direction="";
     }
 };
+
+pair<int, pair<string, string> > global_alignment(string , string,int,int,int);
 
 int main() {
   ifstream oku;
@@ -38,242 +41,219 @@ int main() {
   string satir;
   int match,mismatch,gap;//hep highroad seçilecek
   int sayac=0,dnaSayaci=0;
-  vector<vector<int> > matrix;
   vector<string> dna;
   vector<int> dnaSkor;
 
   if (oku.is_open())
-    {
-      while ( getline(oku, satir) )
       {
-        istringstream ss(satir);
+        while ( getline(oku, satir) )
+        {
+          istringstream ss(satir);
 
-        if(sayac==0){
-          ss >> match >> mismatch >> gap;
-          cout << match << " " << mismatch << " " << gap << endl;
+          if(sayac==0){
+            ss >> match >> mismatch >> gap;
+            cout << match << " " << mismatch << " " << gap << endl;
 
-        }else{
-          dna.push_back(ss.str());
-          cout<< dna.at(sayac-1) <<" size " << dna.at(sayac-1).size()<<endl;
-          dnaSayaci++;
+          }else{
+            dna.push_back(ss.str());
+            cout<< dna.at(sayac-1) <<" size " << dna.at(sayac-1).size()<<endl;
+            dnaSayaci++;
+          }
+
+          sayac++;
+        }
+        oku.close();
+      }
+    else{
+      cout << "input.txt is missing."<<endl;
+    }
+  oku.close();//okundu
+
+  cout<<dna.size()<<endl;
+
+  for(int ilk=0;ilk < dna.size();ilk++){
+    for (int ikinci= 0; ikinci < dna.size(); ikinci++) {
+      if(ilk==ikinci)
+        continue;
+      else{
+        alignments temp = global_alignment(dna.at(ilk),dna.at(ikinci),match,mismatch,gap);
+        dnaSkor.push_back(temp.first);
+        cout<<temp.second.first<<"\n"<< temp.second.second<<endl<<endl;
+      }
+  }
+  }
+  //alignments temp = global_alignment(dna.at(0),dna.at(1),match,mismatch,gap);
+
+  //cout<<temp.second.first<<" "<< temp.second.second<<endl;
+
+    return 0;
+}
+
+pair<int, pair<string, string> > global_alignment(string dna1, string dna2,int match,int mismatch,int gap){
+  vector<vector<int> > matrix(dna2.size()+2, std::vector<int>(dna1.size()+2, 0));
+
+  yon yonler[dna2.size()+2][dna1.size()+2] = {yon()};
+
+  matrix[1][1]=0;
+
+  for(int i=2;i<dna1.size()+2;i++){//satır - genişlik
+      matrix[0][i]=dna1[i-2];
+      matrix[1][i]=matrix[1][i-1]+gap;
+  }
+  for(int k=2;k<dna2.size()+2;k++){//sütun yükseklik
+      matrix[k][0]=dna2[k-2];
+      matrix[k][1]=matrix[k-1][1]+gap;
+  }
+//diagonal gel satir ve sütundan 1 er eksik.üstten columdan 1 eksik.yandan rowdan 1 eksik.
+  int tmpdiag,tmpup,tmpright;
+
+  for(int r=2;r<dna2.size()+2;r++){//row ,2
+    for(int c=2;c<dna1.size()+2;c++){//column
+      if(matrix[0][c]==matrix[r][0])
+        tmpdiag=match+matrix[r-1][c-1];
+
+      else
+        tmpdiag=mismatch+matrix[r-1][c-1];
+
+        tmpup=gap+matrix[r-1][c];
+        tmpright=gap+matrix[r][c-1];
+
+        int biggest = tmpdiag;
+
+        if (tmpdiag <= tmpup){
+          biggest = tmpup;
+
+          yonler[r][c].direction+='|';
+          yonler[r][c].yonup='|';
+
+        }
+        if (biggest <= tmpright){
+          biggest = tmpright;
+          yonler[r][c].direction+='-';
+          yonler[r][c].yonright='-';
+
+        }
+        if(biggest==tmpdiag){
+          yonler[r][c].direction+='\\';
+          yonler[r][c].yondiag='\\';
         }
 
-        sayac++;
-      }
-      oku.close();
+
+        matrix[r][c]=biggest;
     }
-  else{
-    cout << "input.txt is missing."<<endl;
   }
-  oku.close();//okundu
 
   ofstream output;
   output.open(("output.txt"));
-  cout<< "sayac " << dnaSayaci<<endl;
-  int score,i,i2;
-  int hangiDna=0;
+
+  output << "Matris:"<< endl;
+  for(int i = 0; i < dna2.size()+2; i++){//matrisi çizdiriyor
+        for(int j = 0; j < dna1.size()+2; j++){
+
+            output << setw(3) << right << matrix[i][j];
+        }
+        output << endl;
+  }
+
+  int rowcount = (sizeof(yonler) / sizeof(*yonler));
+  int columncount = (sizeof(*yonler) / sizeof(**yonler));
+
+  output << "Yönler:"<< endl;
+  for(int i = 0; i < rowcount; i++){//yonleri çizdiriyor
+        for(int j = 0; j < columncount; j++){
+
+            output << setw(3) << left << yonler[i][j].direction ;
+
+        }
+        output << endl;
+  }
+
+  bool flagDiag=false,flagUp=false,flagRight=false;
+  int intDiag=0,intUp=0,intRight=0,largest=0,siradakiRow=rowcount-1,siradakiColumn=columncount-1,score=matrix[dna2.size()+1][dna1.size()+1];
+  string alignmentDna1,alignmentDna2;
 
 
-  for(i=0;i<dna.at(hangiDna).size();i++) {
+  //alignmentDna1+=matrix[0][columncount-1];
+  //alignmentDna2+=matrix[rowcount-1][0];
 
-    try{
-    for(i2=0;i2<dna.at(i2).size();i2++) {
-
-      try{
-        if(i==i2){//aynı dnalara bakıyorsa skor değerlendirmesi yapma
-          continue;
-        }else{//farklı dnalara bakıyorsa skor bul
-          cout<< "dna2 " << dna.at(i2).size() << " dna1 "<< dna.at(i).size() <<endl;
-          matrix.resize(dna.at(i2).size()+2);//yukseklik dna.at(i2) genişlik dna.at(i)
-            for (int k = 0; k < dna.at(i2).size()+2; k++)
-              matrix[k].resize(dna.at(i).size()+1);
-
-
-          yon yonler[dna.at(i2).size()+2][dna.at(i).size()+2];
-
-          matrix[1][1]=0;
-
-          for(int satiri=2;satiri<dna.at(i).size()+2;satiri++){//satır - genişlik
-              matrix[0][satiri]=dna.at(i)[satiri-2];
-              matrix[1][satiri]=matrix[1][satiri-1]+gap;
-          }
-          for(int sutuni=2;sutuni<dna.at(i2).size()+2;sutuni++){//sütun - yükseklik
-              matrix[sutuni][0]=dna.at(i2)[sutuni-2];
-              matrix[sutuni][1]=matrix[sutuni-1][1]+gap;
-          }
-        //diagonal gel satir ve sütundan 1 er eksik.üstten columdan 1 eksik.yandan rowdan 1 eksik.
-          int tmpdiag,tmpup,tmpright;
-
-          for(int r=2;r<dna.at(i2).size()+2;r++){//row ,2
-            for(int c=2;c<dna.at(i).size()+2;c++){//column
-              if(matrix[0][c]==matrix[r][0])
-                tmpdiag=match+matrix[r-1][c-1];
-
-              else
-                tmpdiag=mismatch+matrix[r-1][c-1];
-
-                tmpup=gap+matrix[r-1][c];
-                tmpright=gap+matrix[r][c-1];
-
-                int biggest = tmpdiag;
-
-                if (tmpdiag <= tmpup){
-                  biggest = tmpup;
-
-                  yonler[r][c].direction+='|';
-                  yonler[r][c].yonup='|';
-
-                }
-                if (biggest <= tmpright){
-                  biggest = tmpright;
-                  yonler[r][c].direction+='-';
-                  yonler[r][c].yonright='-';
-
-                }
-                if(biggest==tmpdiag){
-                  yonler[r][c].direction+='\\';
-                  yonler[r][c].yondiag='\\';
-                }
-
-                matrix[r][c]=biggest;
+  while(1){
+            if(yonler[siradakiRow][siradakiColumn].yondiag == '\\'){
+              flagDiag=true;
+              intDiag=matrix[siradakiRow-1][siradakiColumn-1];
             }
-          }
+            if(yonler[siradakiRow][siradakiColumn].yonup=='|'){
+              flagUp=true;
+              intUp=matrix[siradakiRow-1][siradakiColumn];
+            }
+            if(yonler[siradakiRow][siradakiColumn].yonright=='-'){
+              flagRight=true;
+              intRight=matrix[siradakiRow][siradakiColumn-1];
+            }
+
+            //hangi yola gideceği karar verilecek high road veya low roada göre sonra siradakirow ve column ona göre değişecek.
+
+            if(intDiag>=intUp && intDiag>=intRight) {//yollardaki en büyük değer bulunuyor
+                largest= intDiag;
+            }
+            if(intUp>=intDiag && intUp>=intRight) {
+                largest= intUp;
+            }
+            if(intRight>=intDiag && intRight>=intUp) {
+                largest= intRight;
+            }
+
+            if(flagUp==true && largest==intUp){//yukarı giderken dna2 alınır dna1 yerine - konur
+              alignmentDna1+='-';
+              alignmentDna2+=matrix[siradakiRow][0];
+              siradakiRow=siradakiRow-1;
+              score=score+matrix[siradakiRow][siradakiColumn];
+
+            }else if(flagDiag==true && largest==intDiag){//diagonal gidiyoken dna1(satır) dna2(sütun) ikisini de alırız
+              alignmentDna1+=matrix[0][siradakiColumn];
+              alignmentDna2+=matrix[siradakiRow][0];
+              siradakiRow=siradakiRow-1;
+              siradakiColumn=siradakiColumn-1;
+              score=score+matrix[siradakiRow][siradakiColumn];
+
+            }else if(flagRight==true && largest==intRight){//yana giderken dna1 alınır dna2 yerine - konur
+              alignmentDna1+=matrix[0][siradakiColumn];
+              alignmentDna2+='-';
+              siradakiColumn=siradakiColumn-1;
+              score=score+matrix[siradakiRow][siradakiColumn];
+
+            }
 
 
+            output << siradakiColumn << "\t" <<siradakiRow << "\t" << alignmentDna1 << "\t" << alignmentDna2 << "\t" << score << "\t" << flagDiag << "\t" << flagUp << "\t" << flagRight << "\t" << intDiag << "\t" << intUp  << "\t" << intRight << endl;
 
+            flagDiag=false;
+            flagRight=false;
+            flagUp=false;
 
-          output << "Matris:"<< endl;
-          for(int r = 0; r < dna.at(i2).size()+2; r++){//matrisi çizdiriyor
-                for(int c = 0; c < dna.at(i).size()+2; c++){
-                    output << matrix[r][c] << "\t";
-                }
-                output << endl;
-
-          }
-          int rowcount = (sizeof(yonler) / sizeof(*yonler));
-          int columncount = (sizeof(*yonler) / sizeof(**yonler));
-
-          output << "Yönler:"<< endl;
-          for(int i = 0; i < rowcount; i++){//yonleri çizdiriyor
-                for(int j = 0; j < columncount; j++){
-
-                    output << "(" << yonler[i][j].direction  << ")"<< " ";
-
-                }
-                output << endl;
-          }
-
-          bool flagDiag=false,flagUp=false,flagRight=false;
-          int intDiag=0,intUp=0,intRight=0,largest=0,siradakiRow=rowcount-1,siradakiColumn=columncount-1;
-          score=matrix[dna.at(i2).size()+1][dna.at(i).size()+1];
-          string alignmentDna1,alignmentDna2;
-
-          //cout<<score<<endl;
-
-        while(1){
-
-                  if(yonler[siradakiRow][siradakiColumn].yondiag == '\\'){
-                    flagDiag=true;
-                    intDiag=matrix[siradakiRow-1][siradakiColumn-1];
-                  }
-                  if(yonler[siradakiRow][siradakiColumn].yonup=='|'){
-                    flagUp=true;
-                    intUp=matrix[siradakiRow-1][siradakiColumn];
-                  }
-                  if(yonler[siradakiRow][siradakiColumn].yonright=='-'){
-                    flagRight=true;
-                    intRight=matrix[siradakiRow][siradakiColumn-1];
-                  }
-
-                  //high road siradakirow ve column ona göre değişecek.
-
-                  if(intDiag>=intUp && intDiag>=intRight) {//yollardaki en büyük değer bulunuyor
-                      largest= intDiag;
-                  }
-                  if(intUp>=intDiag && intUp>=intRight) {
-                      largest= intUp;
-                  }
-                  if(intRight>=intDiag && intRight>=intUp) {
-                      largest= intRight;
-                  }
-
-                  if(flagUp==true && largest==intUp){//yukarı giderken dna2 alınır dna1 yerine - konur
-                    alignmentDna1+='-';
-                    alignmentDna2+=matrix[siradakiRow][0];
-                    siradakiRow=siradakiRow-1;
-                    score=score+matrix[siradakiRow][siradakiColumn];
-
-                  }else if(flagDiag==true && largest==intDiag){//diagonal gidiyoken dna1(satır) dna2(sütun) ikisini de alırız
-                    alignmentDna1+=matrix[0][siradakiColumn];
-                    alignmentDna2+=matrix[siradakiRow][0];
-                    siradakiRow=siradakiRow-1;
-                    siradakiColumn=siradakiColumn-1;
-                    score=score+matrix[siradakiRow][siradakiColumn];
-
-                  }else if(flagRight==true && largest==intRight){//yana giderken dna1 alınır dna2 yerine - konur
-                    alignmentDna1+=matrix[0][siradakiColumn];
-                    alignmentDna2+='-';
-                    siradakiColumn=siradakiColumn-1;
-                    score=score+matrix[siradakiRow][siradakiColumn];
-
-                  }
-
-                  output<< siradakiColumn+1 << "\t" <<siradakiRow+1 << "\t" << alignmentDna1 << "\t" << alignmentDna2 << "\t" << score << "\t" << flagDiag << "\t" << flagUp << "\t" << flagRight << "\t" << intDiag << "\t" << intUp  << "\t" << intRight << endl;
-
-
-                  flagUp=false;
-                  flagDiag=false;
-                  flagRight=false;
-
-                  if(yonler[siradakiRow][siradakiColumn].direction!=yonler[2][2].direction){
+            if(yonler[siradakiRow][siradakiColumn].direction!=yonler[2][2].direction){
                     intUp=matrix[siradakiRow][siradakiColumn-1];
                     intDiag=matrix[siradakiRow-1][siradakiColumn-1];
                     intRight=matrix[siradakiRow-1][siradakiColumn];
-                  }else{
-                    intUp=-100;
-                    intDiag=-100;
-                    intRight=-100;
-                  }
+            }else{
+              intUp=-100;
+              intDiag=-100;
+              intRight=-100;
+            }
 
-                  if(siradakiColumn<=2 || siradakiRow<=2){
-                    alignmentDna1+=matrix[0][2];
-                    alignmentDna2+=matrix[2][0];
-                    reverse(alignmentDna1.begin(), alignmentDna1.end());
-                    reverse(alignmentDna2.begin(), alignmentDna2.end());
-                    output<< i<<"\t"<<i2 <<"\t" << alignmentDna1 << " " << alignmentDna2 <<endl;
-                    //alignmentDna1.clear();
-                    //alignmentDna2.clear();
-                    //cout << alignmentDna1 << " " << alignmentDna2<<endl;
-
-                    break;
-                  }
-
-
-              }
-
-              //cout << alignmentDna1 << " " << alignmentDna2<<endl;
-              score+=score;
-              output<< "dna1: "<<alignmentDna1<<"\ndna2: "<<alignmentDna2<<endl;
-              output<< "score: "<< score <<endl << "\n";
+            if(siradakiColumn<=2 || siradakiRow<=2){
+                alignmentDna1+=matrix[0][2];
+                alignmentDna2+=matrix[2][0];
+                reverse(alignmentDna1.begin(), alignmentDna1.end());
+                reverse(alignmentDna2.begin(), alignmentDna2.end());
+                output << alignmentDna1 << " " << alignmentDna2 <<endl;
+                break;
             }
 
 
-            dnaSkor.push_back(score);
-
-          }catch (const std::out_of_range) {
-            break;
-            }
         }
-        //cout << i << '\n';
-      }catch (const out_of_range) {
-          cout << i << '\n';
-          break;
-        }
-      }
 
-      cout<<"end"<<endl;
-      output<< "-------" <<endl;
-      output.close();
+        output<< "score: "<< score <<endl << "\n";
+        output.close();
 
-    return 0;
+        return {score, {alignmentDna1,alignmentDna2}};
 }
