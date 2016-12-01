@@ -97,6 +97,9 @@ int main() {
     cout<<dnaSkor.at(i)<<endl;
   }
 
+  cout << "The largest element is " << *max_element(dnaSkor.begin(),dnaSkor.end()) << '\n';
+  int position= find(dnaSkor.begin(), dnaSkor.end(), *max_element(dnaSkor.begin(),dnaSkor.end()))-dnaSkor.begin();
+  cout<<position<<endl;
 
   return 0;
 }
