@@ -34,6 +34,7 @@ struct yon {
 };
 
 pair<int, pair<string, string> > global_alignment(string , string,int,int,int);
+ofstream output;
 
 int main() {
   ifstream oku;
@@ -71,22 +72,33 @@ int main() {
 
   cout<<dna.size()<<endl;
 
+  int tempScore=0;
+
   for(int ilk=0;ilk < dna.size();ilk++){
     for (int ikinci= 0; ikinci < dna.size(); ikinci++) {
       if(ilk==ikinci)
         continue;
       else{
         alignments temp = global_alignment(dna.at(ilk),dna.at(ikinci),match,mismatch,gap);
-        dnaSkor.push_back(temp.first);
+        tempScore+=temp.first;
+
+        if(ikinci==dna.size()-1){
+          dnaSkor.push_back(tempScore);
+          tempScore=0;
+        }
+
+
         cout<<temp.second.first<<"\n"<< temp.second.second<<endl<<endl;
       }
+    }
   }
+
+  for (int i = 0; i < dnaSkor.size(); i++) {
+    cout<<dnaSkor.at(i)<<endl;
   }
-  //alignments temp = global_alignment(dna.at(0),dna.at(1),match,mismatch,gap);
 
-  //cout<<temp.second.first<<" "<< temp.second.second<<endl;
 
-    return 0;
+  return 0;
 }
 
 pair<int, pair<string, string> > global_alignment(string dna1, string dna2,int match,int mismatch,int gap){
@@ -143,8 +155,8 @@ pair<int, pair<string, string> > global_alignment(string dna1, string dna2,int m
     }
   }
 
-  ofstream output;
-  output.open(("output.txt"));
+
+  output.open("output.txt", ofstream::out | ofstream::app);
 
   output << "Matris:"<< endl;
   for(int i = 0; i < dna2.size()+2; i++){//matrisi çizdiriyor
@@ -172,9 +184,6 @@ pair<int, pair<string, string> > global_alignment(string dna1, string dna2,int m
   int intDiag=0,intUp=0,intRight=0,largest=0,siradakiRow=rowcount-1,siradakiColumn=columncount-1,score=matrix[dna2.size()+1][dna1.size()+1];
   string alignmentDna1,alignmentDna2;
 
-
-  //alignmentDna1+=matrix[0][columncount-1];
-  //alignmentDna2+=matrix[rowcount-1][0];
 
   while(1){
             if(yonler[siradakiRow][siradakiColumn].yondiag == '\\'){
@@ -224,7 +233,7 @@ pair<int, pair<string, string> > global_alignment(string dna1, string dna2,int m
             }
 
 
-            output << siradakiColumn << "\t" <<siradakiRow << "\t" << alignmentDna1 << "\t" << alignmentDna2 << "\t" << score << "\t" << flagDiag << "\t" << flagUp << "\t" << flagRight << "\t" << intDiag << "\t" << intUp  << "\t" << intRight << endl;
+            //output << siradakiColumn << "\t" <<siradakiRow << "\t" << alignmentDna1 << "\t" << alignmentDna2 << "\t" << score << "\t" << flagDiag << "\t" << flagUp << "\t" << flagRight << "\t" << intDiag << "\t" << intUp  << "\t" << intRight << endl;
 
             flagDiag=false;
             flagRight=false;
@@ -252,7 +261,9 @@ pair<int, pair<string, string> > global_alignment(string dna1, string dna2,int m
 
         }
 
+        std::cout << score << std::endl;
         output<< "score: "<< score <<endl << "\n";
+        output<< "-------------------------------------------------------\n";
         output.close();
 
         return {score, {alignmentDna1,alignmentDna2}};
