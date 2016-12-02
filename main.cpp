@@ -44,6 +44,8 @@ int main() {
   int sayac=0,dnaSayaci=0;
   vector<string> dna;
   vector<int> dnaSkor;
+  vector<string> kume1;
+  vector<string> kume2;
 
   if (oku.is_open())
       {
@@ -98,8 +100,73 @@ int main() {
   }
 
   cout << "The largest element is " << *max_element(dnaSkor.begin(),dnaSkor.end()) << '\n';
-  int position= find(dnaSkor.begin(), dnaSkor.end(), *max_element(dnaSkor.begin(),dnaSkor.end()))-dnaSkor.begin();
-  cout<<position<<endl;
+  int pozisyon= find(dnaSkor.begin(), dnaSkor.end(), *max_element(dnaSkor.begin(),dnaSkor.end()))-dnaSkor.begin();
+  cout<<pozisyon<<endl<<"------"<<endl;
+  vector<int> gapYerleri1;
+  vector<int> gapYerleri2;
+  bool starGap1=false,starGap2=false;
+
+  kume1.push_back(dna.at(pozisyon));
+  //kume2.push_back(dna.at(pozisyon));
+
+//pair<int, pair<string, string> > global_alignment(string , string,int,int,int);
+
+  for (int ikinci = 0; ikinci < dna.size(); ikinci++) {
+    if(pozisyon==ikinci){//kendiyle globale sokulmuyor.
+      continue;
+    }else{
+      alignments temporary = global_alignment(dna.at(pozisyon),dna.at(ikinci),match,mismatch,gap);
+        if(temporary.second.first==kume1.at(pozisyon)){
+          //cout<<kume1.at(pozisyon)<<endl;
+          kume1.push_back(temporary.second.second);
+        }else{//Starlar farklı, stringlerdeki gapleri bul birbirine eşitle
+
+          for(int k=0;k<kume1.at(pozisyon).size();k++){//kume1deki stardaki gapleri bul
+            if(kume1.at(pozisyon)[k]=='-'){
+              gapYerleri1.push_back(k);
+              starGap1=true;
+              //cout<<gapYerleri1.at(k)<<endl;
+              //dna.at(pozisyon).find('-')
+            }
+          }
+          cout<<temporary.second.first.size()<<endl;
+          for(int j=0;j<temporary.second.first.size();j++){//temporary(kume2)de stardaki gapleri bul
+            if(temporary.second.first[j]=='-'){
+              cout<<j<<endl;
+              gapYerleri2.push_back(j);
+              starGap2=true;
+              //cout<<gapYerleri2.at(j)<<endl;
+            }
+          }
+
+          if(starGap1){//kumedeki starda gap varsa temptekilere gap koy
+            for(int gap1=0;gap1<gapYerleri1.size();gap1++){
+                temporary.second.first[gapYerleri1.at(gap1)]='-';
+                temporary.second.second[gapYerleri1.at(gap1)]='-';
+            }
+            starGap1=false;
+          }
+
+          if(starGap2){//tempteki starda gap varsa kumedekilere gap koy
+            for(int gap2=0;gap2<gapYerleri2.size();gap2++){
+              for(int it=0;kume1.size();it++){
+                //cout<<kume1.size()<<gapYerleri2.size()<<endl;
+                //kume1.at(it)[gapYerleri2.at(gap2)]='-';
+              }
+            }
+            starGap2=false;
+          }
+          //gapYerleri1.clear();
+          //gapYerleri2.clear();
+
+        }
+
+    }
+  }
+
+  for(int k=0;k<kume1.size();k++){
+    cout<<kume1.at(k)<<endl;
+  }
 
   return 0;
 }
@@ -264,7 +331,7 @@ pair<int, pair<string, string> > global_alignment(string dna1, string dna2,int m
 
         }
 
-        std::cout << score << std::endl;
+        //std::cout << score << std::endl;
         output<< "score: "<< score <<endl << "\n";
         output<< "-------------------------------------------------------\n";
         output.close();
