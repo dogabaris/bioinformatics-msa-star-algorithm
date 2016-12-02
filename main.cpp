@@ -129,31 +129,34 @@ int main() {
               //dna.at(pozisyon).find('-')
             }
           }
-          cout<<temporary.second.first.size()<<endl;
+
           for(int j=0;j<temporary.second.first.size();j++){//temporary(kume2)de stardaki gapleri bul
             if(temporary.second.first[j]=='-'){
-              cout<<j<<endl;
+              //cout<<j<<endl;
               gapYerleri2.push_back(j);
               starGap2=true;
               //cout<<gapYerleri2.at(j)<<endl;
             }
           }
 
-          if(starGap1){//kumedeki starda gap varsa temptekilere gap koy
+           if(starGap1){//kumedeki starda gap varsa temptekilere gap koy
             for(int gap1=0;gap1<gapYerleri1.size();gap1++){
-                temporary.second.first[gapYerleri1.at(gap1)]='-';
-                temporary.second.second[gapYerleri1.at(gap1)]='-';
+                temporary.second.first.insert(gapYerleri1.at(gap1), "-");
+                temporary.second.second.insert(gapYerleri1.at(gap1),"-");
             }
+            kume1.push_back(temporary.second.second);
+            gapYerleri1.clear();
             starGap1=false;
           }
-
-          if(starGap2){//tempteki starda gap varsa kumedekilere gap koy
+           if(starGap2){//tempteki starda gap varsa kumedekilere gap koy
             for(int gap2=0;gap2<gapYerleri2.size();gap2++){
-              for(int it=0;kume1.size();it++){
-                //cout<<kume1.size()<<gapYerleri2.size()<<endl;
-                //kume1.at(it)[gapYerleri2.at(gap2)]='-';
+              for(int it=0;it<kume1.size();it++){
+                cout<<kume1.size()<<gapYerleri2.size()<<endl;
+                kume1.at(it).insert(gapYerleri2.at(gap2), "-");
               }
+              kume1.push_back(temporary.second.second);
             }
+            gapYerleri2.clear();
             starGap2=false;
           }
           //gapYerleri1.clear();
@@ -164,6 +167,10 @@ int main() {
     }
   }
 
+  for(int k=0;k<dna.size();k++){
+    cout<<dna.at(k)<<endl;
+  }
+  cout<<"----"<<endl;
   for(int k=0;k<kume1.size();k++){
     cout<<kume1.at(k)<<endl;
   }
